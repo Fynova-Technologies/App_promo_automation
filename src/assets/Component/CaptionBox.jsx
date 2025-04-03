@@ -9,6 +9,9 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [clickCount, setClickCount] = useState(0);
+  const [showResizeHandle, setShowResizeHandle] = useState(false);
+  const [hoveringBorder, setHoveringBorder] = useState(false);
 
   const textareaRef = useRef(null);
   const captionBoxRef = useRef(null);
@@ -25,15 +28,39 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
   const handleSelect = (e) => {
     e.stopPropagation();
     setSelected(true);
+    setShowResizeHandle(true); 
     
     // Double click to edit
-    if (e.detail === 2) {
-      setIsEditing(true);
+    // if (e.detail === 2) {
+    //   setIsEditing(true);
+    // }
+
+    setClickCount(prev => prev + 1);
+
+    setTimeout(() => setClickCount(0), 400);
+
+    if(clickCount === 0){
+      setClickCount(true);
+      setResizing(false);
+      setIsEditing(false);
     }
+    else if(clickCount === 1){
+      setIsEditing(true);
+      setResizing(false);
+    }
+  };
+
+  // Show resize handle when hovering over border
+  const handleMouseEnter = () => {
+    if (selected) setHoveringBorder(true);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveringBorder(false);
   };
   
   const handleDragStart = (e) => {
-    if (isEditing) return; // Don't drag while editing
+    // if (isEditing) return; // Don't drag while editing
     
     e.stopPropagation();
     e.preventDefault();
@@ -59,6 +86,7 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
 
   const handleEditingComplete = () => {
     setIsEditing(false);
+    setClickCount(0);
   };
 
   // Focus textarea when editing starts
@@ -66,7 +94,10 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
     if (isEditing && textareaRef.current) {
       textareaRef.current.focus();
     }
-  }, [isEditing]);
+    else if(resizing && textareaRef.current){
+      textareaRef.current.focus();
+    }
+  }, [isEditing, resizing]);
 
   useEffect(() => {
     const handleGlobalMouseMove = (e) => {
@@ -136,6 +167,10 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
       return;
     }
     setSelected(false);
+    setClickCount(0);
+    setIsEditing(false);
+    setResizing(false);
+    setHoveringBorder(false);
   };
 
   // Add handler to the container ref for deselecting
@@ -205,6 +240,7 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
             wordBreak: "break-word",
             color: fontColor,
             fontFamily: fontFamily,
+            fontSize: `${fontSize}px`,
             textShadow: "0px 0px 4px rgba(0, 0, 0, 0.7)",
           }}
         >
@@ -228,6 +264,8 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
             zIndex: 1002
           }}
           onMouseDown={handleResizeStart}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
         />
       )}
     </div>
@@ -236,3 +274,4 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
     
   </div>
 )};
+

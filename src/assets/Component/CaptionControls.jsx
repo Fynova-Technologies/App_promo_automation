@@ -18,15 +18,15 @@ const CaptionControls = ({ fontColor, setFontColor, fontFamily, setFontFamily, f
 
         <label className='font-size'  style={{color: "white"}} >
           Font Size
-          <select value={fontSize} onChange={(e) => setFontSize(e.target.value)}>
-            <option value="12" >12 px</option>
-            <option value="14" >14 px</option>
-            <option value="16" >16 px</option>
-            <option value="18" >18 px</option>
-            <option value="24" >24 px</option>
-            <option value="28" >28 px</option>
-            <option value="32" >32 px</option>
-            <option value="36" >36 px</option>
+          <select value={fontSize} onChange={(e) => setFontSize(e.target.value)} style={{fontSize: fontSize}}>
+            <option value="12" style={{fontFamily: '12'}}>12 px</option>
+            <option value="14" style={{fontFamily: '14'}}>14 px</option>
+            <option value="16" style={{fontFamily: '16'}}>16 px</option>
+            <option value="18" style={{fontFamily: '18'}}>18 px</option>
+            <option value="24" style={{fontFamily: '24'}}>24 px</option>
+            <option value="28" style={{fontFamily: '28'}}>28 px</option>
+            <option value="32" style={{fontFamily: '32'}}>32 px</option>
+            <option value="36" style={{fontFamily: '36'}}>36 px</option>
             
           </select>
         </label>

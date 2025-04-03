@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, act } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import '../Style/mockupSection.css';
 import { InnerImage } from "./ScreenShot";
 import { CaptionBox } from "./CaptionBox";
@@ -8,10 +8,18 @@ import CaptionControls from "./CaptionControls";
 import { FrameSelector } from "./FrameSelector";
 import googlepixel4 from '../Pictures/googlepixel4.png'
 
+const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
 export const MockupSection = ({ background, setBackground, activeControl, setActiveControl}) => {
   const [position, setPosition] = useState({ x: 30, y: 30 });
   const [rotation, setRotation] = useState(0);
-  const [size, setSize] = useState({ width: 255, height: 480 });
+  const [size, setSize] = useState({ width: 225, height: 450 });
   const [selected, setSelected] = useState(false);
   const [resizing, setResizing] = useState(false);
   const [rotating, setRotating] = useState(false);
@@ -25,8 +33,24 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
   const [fontSize, setFontSize] = useState("28");
   const [mobileFrame, setMobileFrame] = useState(googlepixel4);
   const [showFrameSelector, setShowFrameSelector] = useState(false);
+  const [screenArea, setScreenArea] = useState({
+    width: size.width,
+    height: size.height,
+    top: 0,
+    left: 0
+  });
+  const [currentFrameConfig, setCurrentFrameConfig] = useState({
+    screenAreaOffsets: {
+      top: 0.04,     
+      left: 0.045,
+      right: 0.045,
+      bottom: 0.03
+    },
+    adjustmentStep: { width: 10, height: 20 }
+  });
   
   const containerRef = useRef(null); 
+  const frameRef = useRef(null);
 
   const handleSelect = (e) => {
     e.stopPropagation();
@@ -46,10 +70,14 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
     setDragging(true);
     setResizing(false);
     setRotating(false);
-    const rect = e.currentTarget.getBoundingClientRect();
+    
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const elementRect = e.currentTarget.getBoundingClientRect();
+    
+    // Calculate offset relative to the element, not just absolute coordinates
     setDragOffset({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      x: e.clientX - elementRect.left,
+      y: e.clientY - elementRect.top
     });
   };
 
@@ -59,6 +87,18 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
     setRotating(true);
     setDragging(false);
     setResizing(false);
+
+    // Store the initial rotation and mouse position
+  const rect = e.currentTarget.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const initialAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+  
+  // Store the starting angle relative to current rotation
+  setDragOffset({
+    initialRotation: rotation,
+    initialAngle: initialAngle
+  });
   };
 
   const handleResizeStart = (e) => {
@@ -67,23 +107,93 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
     setResizing(true);
     setDragging(false);
     setRotating(false);
+
   };
 
-  const handleImageSelect = (e) =>{
+  const handleImageSelect = (e) => {
     const file = e.target.files[0];
-    if(file){
+    if (file) {
       const img = new Image();
       img.src = URL.createObjectURL(file);
-      img.onload = () =>{
+      img.onload = () => {
         const aspectRatio = img.width / img.height;
-        const newWidth = 300;
-        const newHeight = newWidth / aspectRatio;
-
+        
+        // Get frame dimensions
+        const frameRect = frameRef.current.getBoundingClientRect();
+        const frameWidth = frameRect.width;
+        const frameHeight = frameRect.height;
+        const frameAspectRatio = frameWidth / frameHeight;
+        
+        let newWidth, newHeight;
+  
+        // Fit image based on aspect ratio
+        if (aspectRatio > frameAspectRatio) {
+          // Image is wider
+          newWidth = frameWidth;
+          newHeight = frameWidth / aspectRatio;
+        } else {
+          // Image is taller
+          newHeight = frameHeight;
+          newWidth = frameHeight * aspectRatio;
+        }
+  
         setInnerImageSrc(img.src);
-        setSize({width: newWidth, height: newHeight});
-      }
+        setSize({ width: newWidth, height: newHeight });
+      };
     }
+  };
+
+  // Update dimensions when frame changes
+  useEffect(() => {
+    if (mobileFrame && frameRef.current) {
+      const frameRect = frameRef.current.getBoundingClientRect();
+      setSize({ width: frameRect.width, height: frameRect.height });
+    }
+  }, [mobileFrame]);
+
+// useEffect(() => {
+//   if (frameRef.current) {
+//     // Calculate the screen area based on the frame's dimensions and design
+//     // You may need to adjust these offset values based on your specific phone frame image
+//     const frameRect = frameRef.current.getBoundingClientRect();
+    
+//     // These offsets depend on the specific phone frame being used
+//     // For Google Pixel 4, these values work well but might need adjustment for other frames
+//     const topOffset = frameRect.height * 0.03;  // ~3% from top
+//     const sideOffset = frameRect.width * 0.045; // ~4.5% from sides
+//     const bottomOffset = frameRect.height * 0.03; // ~3% from bottom
+    
+//     const updatedScreenArea = {
+//       width: frameRect.width - (sideOffset * 2),
+//       height: frameRect.height - (topOffset + bottomOffset),
+//       top: topOffset,
+//       left: sideOffset
+//     };
+    
+//     setScreenArea(updatedScreenArea);
+//   }
+// }, [size, mobileFrame]);
+
+useEffect(() => {
+  if (frameRef.current && mobileFrame) {
+    // Get frame dimensions
+    const frameRect = frameRef.current.getBoundingClientRect();
+    const frameWidth = frameRect.width;
+    const frameHeight = frameRect.height;
+    
+    // Use current frame config to calculate screen area
+    const { top, left, right, bottom } = currentFrameConfig.screenAreaOffsets;
+    
+    const updatedScreenArea = {
+      width: frameWidth - (frameWidth * (left + right)),
+      height: frameHeight - (frameHeight * (top + bottom)),
+      top: frameHeight * top,
+      left: frameWidth * left
+    };
+    
+    setScreenArea(updatedScreenArea);
   }
+}, [size, currentFrameConfig, mobileFrame]);
 
   const toggleColorPicker = () => {
     setActiveControl(activeControl === 'colorPicker' ? null : 'colorPicker');
@@ -105,27 +215,28 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
   };
 
   // Define the screen area dimensions based on the phone mockup
-  const screenArea = {
-    width: size.width, 
-    height: size.height, 
-    top: 0, 
-    left: 0,
-  };
+  // const screenArea = {
+  //   width: size.width, 
+  //   height: size.height, 
+  //   top: 0, 
+  //   left: 0,
+  // };
 
   useEffect(() => {
     const handleGlobalMouseMove = (e) => {
-      if (dragging && !resizing && !rotating) { // Ensure only dragging is active
+      if (dragging && !resizing && !rotating) {
         const containerRect = containerRef.current.getBoundingClientRect();
         const newX = e.clientX - containerRect.left - dragOffset.x;
         const newY = e.clientY - containerRect.top - dragOffset.y;
         setPosition({ x: newX, y: newY });
-      } else if (rotating && selected && !dragging && !resizing) { // Ensure only rotating is active
-        const rect = containerRef.current.getBoundingClientRect();
+      } else if (rotating && selected && !dragging && !resizing) {
+        const rect = document.querySelector('.image-container').getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
         const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
-        setRotation(angle);
-      } else if (resizing && selected && !dragging && !rotating) { // Ensure only resizing is active
+        const rotationDelta = angle - dragOffset.initialAngle;
+        setRotation(dragOffset.initialRotation + rotationDelta);
+      } else if (resizing && selected && !dragging && !rotating) {
         const imageRect = document.querySelector('.image-container').getBoundingClientRect();
         const dx = e.clientX - imageRect.left;
         const dy = e.clientY - imageRect.top;
@@ -133,6 +244,31 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
         const newWidth = Math.max(100, dx);
         const newHeight = newWidth * ratio;
         setSize({ width: newWidth, height: newHeight });
+
+        // Calculate and update screen area immediately during resize
+        // if (frameRef.current) {
+        //   const frameRect = frameRef.current.getBoundingClientRect();
+        //   const topOffset = frameRect.height * 0.03;
+        //   const sideOffset = frameRect.width * 0.045;
+        //   const bottomOffset = frameRect.height * 0.03;
+          
+        //   setScreenArea({
+        //     width: newWidth - (sideOffset * 2),
+        //     height: newHeight - (topOffset + bottomOffset),
+        //     top: topOffset,
+        //     left: sideOffset
+        //   });
+        // }
+        if (frameRef.current) {
+          const { top, left, right, bottom } = currentFrameConfig.screenAreaOffsets;
+          
+          setScreenArea({
+            width: newWidth - (newWidth * (left + right)),
+            height: newHeight - (newHeight * (top + bottom)),
+            top: newHeight * top,
+            left: newWidth * left
+          });
+        }
       }
     };
 
@@ -153,6 +289,7 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
     };
   }, [dragging, rotating, resizing, selected, dragOffset, size]);
 
+
   const handleDownload = () => {
     const container = containerRef.current;
   
@@ -161,9 +298,45 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
       return;
     }
   
-    // Use dom-to-image to capture the screenshot
-    domtoimage.toPng(container)
+    // Save current styles
+    const mockupContainer = container;
+    const innerImage = container.querySelector(".inner-image");
+  
+    const originalMockupWidth = mockupContainer.style.width;
+    const originalMockupHeight = mockupContainer.style.height;
+    const originalInnerImageWidth = innerImage.style.width;
+    const originalInnerImageHeight = innerImage.style.height;
+  
+    // Set fixed sizes for downloading
+    const FIXED_MOCKUP_WIDTH = 540;  // Set desired mockup width
+    const FIXED_MOCKUP_HEIGHT = 1024; // Set desired mockup height
+    const FIXED_IMAGE_WIDTH = 423;    // Set desired inner image width
+    const FIXED_IMAGE_HEIGHT = 858;   // Set desired inner image height
+  
+    mockupContainer.style.width = `${FIXED_MOCKUP_WIDTH}px`;
+    mockupContainer.style.height = `${FIXED_MOCKUP_HEIGHT}px`;
+    innerImage.style.width = `${FIXED_IMAGE_WIDTH}px`;
+    innerImage.style.height = `${FIXED_IMAGE_HEIGHT}px`;
+  
+    // Capture screenshot with fixed dimensions
+    const options = {
+      width: FIXED_MOCKUP_WIDTH,
+      height: FIXED_MOCKUP_HEIGHT,
+      scrollX: 0,
+      scrollY: -window.scrollY,
+      useCORS: true,
+      scale: 2, // Increase for better quality
+    };
+  
+    domtoimage.toPng(container, options)
       .then((dataUrl) => {
+        // Restore original sizes after capturing
+        mockupContainer.style.width = originalMockupWidth;
+        mockupContainer.style.height = originalMockupHeight;
+        innerImage.style.width = originalInnerImageWidth;
+        innerImage.style.height = originalInnerImageHeight;
+  
+        // Trigger download
         const link = document.createElement("a");
         link.href = dataUrl;
         link.download = "mockup.png";
@@ -174,7 +347,81 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
       .catch((err) => {
         console.error("Download Error:", err);
       });
-  }; 
+  };
+
+  // Add these handlers to the image-container div
+  const handleTouchStart = (e) => {
+    if (!selected) handleSelect(e);
+    
+    e.stopPropagation();
+    e.preventDefault();
+    setDragging(true);
+    setResizing(false);
+    setRotating(false);
+    
+    const touch = e.touches[0];
+    const rect = e.currentTarget.getBoundingClientRect();
+    
+    setDragOffset({
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top
+    });
+  };
+
+  // Add touch event listeners
+  useEffect(() => {
+    const handleTouchMove = (e) => {
+      if (dragging && !resizing && !rotating) {
+        const touch = e.touches[0];
+        const containerRect = containerRef.current.getBoundingClientRect();
+        
+        const newX = touch.clientX - containerRect.left - dragOffset.x;
+        const newY = touch.clientY - containerRect.top - dragOffset.y;
+        
+        setPosition({ x: newX, y: newY });
+      }
+    };
+  
+  const handleTouchEnd = () => {
+    setDragging(false);
+    setResizing(false);
+    setRotating(false);
+  };
+  
+  if (dragging || rotating || resizing) {
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleTouchEnd);
+  }
+  
+  return () => {
+    window.removeEventListener('touchmove', handleTouchMove);
+    window.removeEventListener('touchend', handleTouchEnd);
+  };
+}, [dragging, rotating, resizing, dragOffset, size]);
+
+const handleWindowResize = useCallback(debounce(() => {
+  if (selected) {
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const imageRect = document.querySelector('.image-container').getBoundingClientRect();
+
+    const newX = imageRect.left - containerRect.left;
+    const newY = imageRect.top - containerRect.top;
+    setPosition({ x: newX, y: newY });
+
+    setDragging(false);
+    setResizing(true);
+    setRotating(true);
+
+    setSelected(false);
+    setTimeout(() => setSelected(true), 0);
+  }
+}, 100), [selected]);
+
+useEffect(() => {
+  window.addEventListener('resize', handleWindowResize);
+  return () => window.removeEventListener('resize', handleWindowResize);
+}, [handleWindowResize]);
+  
 
   return (
     <div className="mockup-section-wrapper" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "20px" }}>
@@ -187,8 +434,6 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
             Download
           </button>
         </div>
-
-        
 
       <div className="mockup-controls">
         <label  className="select-image-button">
@@ -252,11 +497,12 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
             <div className="external-frame-selector">
               <FrameSelector
                 selectedFrame={mobileFrame}
-                onFrameSelect={(frame) => {
-                  setMobileFrame(frame);
+                onFrameSelect={(frameData) => {
+                  // setMobileFrame(frame);
+                  setMobileFrame(frameData.image);
+                  setCurrentFrameConfig(frameData.config);
                 }}
-                // onSizeChange={(newSize) => setSize(newSize)}
-                // className="external-selector"
+                onSizeChange={(newSize) => setSize(newSize)}
               />
             </div>
           )}
@@ -267,7 +513,7 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
       <div
         ref={containerRef}
         className="mockup-container"
-        style={{ background: background }}
+        style={{ background: background, position: "relative" }}
         onClick={handleDeselect}
       >
         
@@ -283,8 +529,10 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
         )}
         
         <div
+          ref={frameRef}
           className="image-container"
           style={{
+            position: "absolute",
             left: `${position.x}px`,
             top: `${position.y}px`,
             transform: `rotate(${rotation}deg)`,
@@ -295,13 +543,15 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
           }}
           onClick={handleSelect}
           onMouseDown={selected ? handleDragStart : null}
-        >
+          onTouchStart={handleTouchStart}
+          >
           {innerImageSrc && (
             <InnerImage
               src={innerImageSrc}
-              parentSize={size}
+              // parentSize={size}
               parentRotation={rotation}
               screenArea={screenArea}
+              adjustmentStep={currentFrameConfig.adjustmentStep}
             />
           )}
           <img
@@ -314,19 +564,14 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
               display: "block",
               position: "relative",
               zIndex: 3,
+              objectFit: "contain",
             }}
             draggable={false}
           />
           {selected && (
             <>
-              <div
-                className="rotation-handle"
-                onMouseDown={handleRotationStart}
-              />
-              <div
-                className="resize-handle"
-                onMouseDown={handleResizeStart}
-              />
+              <div className="rotation-handle" onMouseDown={handleRotationStart} />
+              <div className="resize-handle" onMouseDown={handleResizeStart} />
             </>
           )}
         </div>

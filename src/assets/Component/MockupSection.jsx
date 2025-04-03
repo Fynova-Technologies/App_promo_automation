@@ -151,29 +151,6 @@ export const MockupSection = ({ background, setBackground, activeControl, setAct
     }
   }, [mobileFrame]);
 
-// useEffect(() => {
-//   if (frameRef.current) {
-//     // Calculate the screen area based on the frame's dimensions and design
-//     // You may need to adjust these offset values based on your specific phone frame image
-//     const frameRect = frameRef.current.getBoundingClientRect();
-    
-//     // These offsets depend on the specific phone frame being used
-//     // For Google Pixel 4, these values work well but might need adjustment for other frames
-//     const topOffset = frameRect.height * 0.03;  // ~3% from top
-//     const sideOffset = frameRect.width * 0.045; // ~4.5% from sides
-//     const bottomOffset = frameRect.height * 0.03; // ~3% from bottom
-    
-//     const updatedScreenArea = {
-//       width: frameRect.width - (sideOffset * 2),
-//       height: frameRect.height - (topOffset + bottomOffset),
-//       top: topOffset,
-//       left: sideOffset
-//     };
-    
-//     setScreenArea(updatedScreenArea);
-//   }
-// }, [size, mobileFrame]);
-
 useEffect(() => {
   if (frameRef.current && mobileFrame) {
     // Get frame dimensions
@@ -214,14 +191,6 @@ useEffect(() => {
     setCaptionText(newCaption);
   };
 
-  // Define the screen area dimensions based on the phone mockup
-  // const screenArea = {
-  //   width: size.width, 
-  //   height: size.height, 
-  //   top: 0, 
-  //   left: 0,
-  // };
-
   useEffect(() => {
     const handleGlobalMouseMove = (e) => {
       if (dragging && !resizing && !rotating) {
@@ -244,21 +213,6 @@ useEffect(() => {
         const newWidth = Math.max(100, dx);
         const newHeight = newWidth * ratio;
         setSize({ width: newWidth, height: newHeight });
-
-        // Calculate and update screen area immediately during resize
-        // if (frameRef.current) {
-        //   const frameRect = frameRef.current.getBoundingClientRect();
-        //   const topOffset = frameRect.height * 0.03;
-        //   const sideOffset = frameRect.width * 0.045;
-        //   const bottomOffset = frameRect.height * 0.03;
-          
-        //   setScreenArea({
-        //     width: newWidth - (sideOffset * 2),
-        //     height: newHeight - (topOffset + bottomOffset),
-        //     top: topOffset,
-        //     left: sideOffset
-        //   });
-        // }
         if (frameRef.current) {
           const { top, left, right, bottom } = currentFrameConfig.screenAreaOffsets;
           
@@ -308,10 +262,10 @@ useEffect(() => {
     const originalInnerImageHeight = innerImage.style.height;
   
     // Set fixed sizes for downloading
-    const FIXED_MOCKUP_WIDTH = 540;  // Set desired mockup width
-    const FIXED_MOCKUP_HEIGHT = 1024; // Set desired mockup height
-    const FIXED_IMAGE_WIDTH = 423;    // Set desired inner image width
-    const FIXED_IMAGE_HEIGHT = 858;   // Set desired inner image height
+    const FIXED_MOCKUP_WIDTH = 540;
+    const FIXED_MOCKUP_HEIGHT = 1024;
+    const FIXED_IMAGE_WIDTH = 423;   
+    const FIXED_IMAGE_HEIGHT = 858;   
   
     mockupContainer.style.width = `${FIXED_MOCKUP_WIDTH}px`;
     mockupContainer.style.height = `${FIXED_MOCKUP_HEIGHT}px`;

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import "../Style/captionBox.css";
 
 export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, fontFamily, fontSize }) => {
-  const [position, setPosition] = useState({ x: 0, y: 10 });
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [size, setSize] = useState({ width: 200, height: 60 });
   const [isEditing, setIsEditing] = useState(false);
   const [selected, setSelected] = useState(false);
@@ -15,13 +15,14 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
 
   const textareaRef = useRef(null);
   const captionBoxRef = useRef(null);
+  const initialPositionSet = useRef(false);
   
   // Center the caption initially
   useEffect(() => {
     if (containerRef.current && captionBoxRef.current) {
       const containerRect = containerRef.current.getBoundingClientRect();
       const centerX = (containerRect.width - size.width) / 2;
-      setPosition({ x: centerX, y: 10 });
+      setPosition({ x: centerX, y: 20 });
     }
   }, [containerRef, size.width]);
 
@@ -29,23 +30,16 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
     e.stopPropagation();
     setSelected(true);
     setShowResizeHandle(true); 
-    
-    // Double click to edit
-    // if (e.detail === 2) {
-    //   setIsEditing(true);
-    // }
 
-    setClickCount(prev => prev + 1);
+    // setClickCount(prev => prev + 1);
 
-    setTimeout(() => setClickCount(0), 400);
+    // setTimeout(() => setClickCount(0), 400);
 
-    if(clickCount === 0){
-      setClickCount(true);
-      setResizing(false);
-      setIsEditing(false);
-    }
-    else if(clickCount === 1){
+    if (e.detail === 2) {
       setIsEditing(true);
+      setResizing(false);
+    } else {
+      setIsEditing(false);
       setResizing(false);
     }
   };
@@ -191,6 +185,7 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
     <div
       ref={captionBoxRef}
       className={`caption-box-container ${selected ? 'selected' : ''}`}
+      // className="caption-box-container"
       style={{
         position: "absolute",
         left: `${position.x}px`,
@@ -200,7 +195,7 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
         backgroundColor: "transparent",
         zIndex: 1001,
         cursor: selected && !isEditing ? "move" : "text",
-        border: selected ? "1px dashed rgba(0, 0, 0, 0.3)" : "none"
+        border: selected ? "1px dashed rgba(0, 0, 0, 0.3)" : "none",
       }}
       onClick={handleSelect}
       onMouseDown={selected && !isEditing ? handleDragStart : null}
@@ -212,7 +207,7 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
           onChange={handleTextChange}
           onBlur={handleEditingComplete}
           className="caption-textarea"
-          placeholder="Add your caption here"
+          placeholder="Add caption"
           style={{
             width: "100%",
             height: "100%",

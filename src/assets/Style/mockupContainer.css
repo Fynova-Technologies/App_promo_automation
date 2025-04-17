@@ -1,0 +1,89 @@
+  .mockup-container{
+    grid-column: 2;
+    margin-top: 20px;
+    width: 380px;
+    height: 692px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+
+  .image-container img{ 
+    position: absolute;
+    z-index: 10000;
+  }
+
+  .rotation-handle,
+  .resize-handle {
+    width: 20px;
+    height: 20px;
+    background: red;
+    position: absolute;
+    border-radius: 50%;
+    bottom: -20px; 
+    right: -15px;  
+    cursor: nwse-resize;
+    z-index: 9999;
+  }
+
+.rotation-handle {
+  top: -30px;
+  left: 50%;
+  background-color: blue;
+  transform: translateX(-50%);
+  cursor: grab;
+}
+
+
+@media (max-width: 1464px){
+  .mockup-container{
+    width: 300px;
+    height: 600px;
+  }
+
+  .image-container img{
+    width: 100px;
+    height: 300px;
+   
+  }
+}
+
+@media (max-width: 1024px){
+  .mockup-container{
+    width: 270px;
+    height: 500px;
+  }
+}
+  
+  @media (max-width: 768px) {
+    .image-container {
+      width: 80%;
+      height: auto;
+      max-width: 300px;
+      max-height: 600px;
+    }
+  
+    .caption-box {
+      font-size: 18px;
+      bottom: 10px;
+      left: 10px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .image-container {
+      width: 100%;
+      height: auto;
+      max-width: 240px;
+      max-height: 480px;
+    }
+  
+    .caption-box {
+      font-size: 16px;
+      bottom: 5px;
+      left: 5px;
+    }
+  }
+  

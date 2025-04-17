@@ -12,7 +12,7 @@ const MOBILE_FRAMES = [
     src: googlepixel3,
     name: 'Google Pixel 3',
     width: '30',
-    defaultSize: { width: 185, height: 396 },
+    defaultSize: { width: 185, height: 400 },
     screenAreaOffsets: {
       top: 0.050,  
       left: 0.043,  
@@ -25,14 +25,14 @@ const MOBILE_FRAMES = [
     id: 2,
     src: googlepixel4,
     name: 'Google Pixel 4',
-    defaultSize: { width: 185, height: 365 },
+    defaultSize: { width: 115, height: 0 },
     screenAreaOffsets: {
-      top: 0.03, 
-      left: 0.065,  
-      right: 0.0425,  
-      bottom: 0 
+      top: 0.037,
+      left: 0.025,
+      right: 0.0300,
+      bottom: 0.0
     },
-    adjustmentStep: { width: 0, height: 0 } 
+    adjustmentStep: { width: 10, height: 0 } 
   },
   {
     id: 3,
@@ -80,11 +80,6 @@ export const FrameSelector = ({ selectedFrame, onFrameSelect, onSizeChange }) =>
     const selectedFrameSrc = e.target.value;
     const selectedFrameData = MOBILE_FRAMES.find(f => f.src === selectedFrameSrc);
 
-    // Update the selected frame
-    // onFrameSelect(selectedFrameSrc);
-    // if (selectedFrameData && onSizeChange) {
-    //   onSizeChange(selectedFrameData.defaultSize);
-    // }
     if (selectedFrameData) {
       const newSize = {
         width: selectedFrameData.defaultSize.width + selectedFrameData.adjustmentStep.width,

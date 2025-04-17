@@ -1,0 +1,116 @@
+.mockup-controls {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+    background-color: black;
+    height: 89.5vh;
+    padding: 200px 30px;
+    border-left: 1px solid white ;
+  }
+
+  .select-image-button{
+    color: white;
+  }
+  
+  .select-image-button input {
+    display: none;
+  }
+  
+  .caption-button,
+  .bg-button,
+  .frame-button,
+  .select-image-button {
+    padding: 10px 20px;
+    font-size: 100%;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    color: black;
+    font-weight: bold;
+    background-color: #FAF9F6;
+  }
+  
+  .caption-controls,
+  .external-frame-selector {
+    width: 100%;
+  }
+
+  @media (max-width: 1464px) {
+    .mockup-controls {
+      height: 89.5vh;
+      padding: 180px 20px;
+    }
+  
+    .caption-button,
+    .bg-button,
+    .frame-button {
+      font-size: 100%;
+      padding: 8px 16px;
+      
+    }
+  
+    .caption-controls,
+    .external-frame-selector {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .mockup-controls {
+      height: 90vh;
+      padding: 130px 20px;
+    }
+  
+    .caption-button,
+    .bg-button,
+    .frame-button {
+      font-size: 1rem;
+      padding: 8px 20px;
+    }
+  
+    .caption-controls,
+    .external-frame-selector {
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .mockup-controls {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      padding: 0;
+      height: 10vh;
+      background-color: black;
+      border-left: none;
+      border-top: 1px solid white ;
+      border-bottom: 1px solid white ;
+      z-index: 10;
+    }
+
+    .caption-button,
+    .bg-button,
+    .frame-button,
+    .select-image-button {
+      padding: auto 20px;
+      width: 20%;
+      height: auto;
+    }
+  }
+
+  @media screen and (max-width: 385px) {
+    .caption-button,
+    .bg-button,
+    .frame-button,
+    .select-image-button {
+      font-size: 15px;
+      font-weight: normal;
+      padding: 10px;
+      gap: auto;
+    }
+  }
+  

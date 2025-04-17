@@ -1,9 +1,16 @@
 import '../Style/captionControls.css'
 import '../Style/fonts.css'
 
-const CaptionControls = ({ fontColor, setFontColor, fontFamily, setFontFamily, fontSize, setFontSize }) => {
+const CaptionControls = ({ fontColor, setFontColor, fontFamily, setFontFamily, fontSize, setFontSize, setShowCaptionBox }) => {
     return (
       <div className="caption-controls-container">
+
+        <div className="caption-delete-button">
+          <button onClick={() => setShowCaptionBox(false)}>Delete</button>
+        </div>
+
+        <div className="caption-style">
+
         <label className='font-container' style={{color: "white", textDecoration: 'none'}}>
           Font Style
           <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} style={{ fontFamily: fontFamily }}>
@@ -35,6 +42,7 @@ const CaptionControls = ({ fontColor, setFontColor, fontFamily, setFontFamily, f
           Font Color
           <input type="color" value={fontColor} onChange={(e) => setFontColor(e.target.value)} />
         </label>
+      </div>
       </div>
     );
   };

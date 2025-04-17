@@ -2,12 +2,9 @@
     display: flex;
     flex-direction: column;
     text-align: center;
-    position: relative;
-    left: 8px;
-    bottom: 7px;
     gap: 40px;
-    padding: 320px 20px 0px 20px;
-    height: 100vh;
+    padding: 200px 20px 0px 20px;
+    height: 89.5vh;
     border-left: 1px solid white;
     background-color: black;
 }
@@ -30,4 +27,57 @@ h3{
     color: black;
     border-radius: 5px;
     padding: 15px;
+}
+
+@media screen and (max-width: 1464px) {
+    .frame-selector-container{
+        height: 88vh;
+        padding: 180px 20px 0px 20px;
+    }
+    
+    .h3{
+        font-size: 25px;
+    }
+
+    .frame-selector-container select{
+        padding: 10px;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .frame-selector-container{
+        padding: 120px 20px 0px 20px;
+    }
+    
+    .h3{
+        font-size: 10px;
+    }
+
+    .frame-selector-container select{
+        padding: 8px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .frame-selector-container{
+        position: relative;
+        padding: 0px;
+        height: 40vh;
+        border-left: none;
+        gap: 20px;
+        overflow-y: auto;
+        z-index: 10000;
+    }
+    
+    .h3{
+        font-size: 18px;
+    }
+
+    .frame-selector-container select{
+        display: flex;
+        justify-content: center;
+        padding: 5px;
+        width: 150px;
+        margin: 0 auto;
+    }
 }

@@ -1,8 +1,11 @@
-/* captionBox.css */
-
 .caption-box-container {
     transition: all 0.2s ease;
     user-select: none;
+  }
+
+  .canvas-container{
+    width: 100%;
+    height: 70vh;
   }
   
   .caption-box-container.selected {

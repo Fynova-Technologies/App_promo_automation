@@ -74,12 +74,10 @@
         flex-direction: column;
         justify-content: end;
         position: relative;
-        left: 8px;
-        bottom: 7px;
-        gap: 40px;
-        padding: 150px 20px 0px 20px;
-        height: 100vh;
-        border-left: 1px solid white;
-        background-color: black;
+        padding: 0px;
+        height: 60vh;
+        border-left: none;
+        gap: 20px;
     }
+    
 }

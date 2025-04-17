@@ -62,7 +62,7 @@ h3{
     .frame-selector-container{
         position: relative;
         padding: 0px;
-        height: 40vh;
+        height: 27vh;
         border-left: none;
         gap: 20px;
         overflow-y: auto;

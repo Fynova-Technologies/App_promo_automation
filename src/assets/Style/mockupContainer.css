@@ -12,7 +12,7 @@
 
   .image-container img{ 
     position: absolute;
-    z-index: 10000;
+    /* z-index: 10; */
   }
 
   .rotation-handle,
@@ -54,6 +54,7 @@
   .mockup-container{
     width: 270px;
     height: 500px;
+    margin-bottom: 20px;
   }
 }
   

@@ -29,6 +29,35 @@ h3{
     padding: 15px;
 }
 
+.add-remove-frame{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.add-remove-frame h3{
+    font-size: 30px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.add-button{
+    color: black;
+    background-color: white;
+    margin-bottom: 20px;
+    cursor: pointer;
+    padding: 10px 50px;
+    border-radius: 5px;
+}
+
+.remove-button{
+    color: black;
+    background-color: white;
+    padding: 10px 40px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
 @media screen and (max-width: 1464px) {
     .frame-selector-container{
         height: 88vh;

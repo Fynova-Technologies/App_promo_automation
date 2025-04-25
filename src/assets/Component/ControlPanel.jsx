@@ -3,6 +3,7 @@ import CaptionControls from "./CaptionControls";
 import { FrameSelector } from "./FrameSelector";
 
 export const ControlPanel = (props) => {
+
     return (
         <div className="controls-panel">
             {props.activeControl === "colorPicker" && (
@@ -21,8 +22,6 @@ export const ControlPanel = (props) => {
                         fontSize={props.fontSize}
                         setFontSize={props.setFontSize}
                         setShowCaptionBox={props.setShowCaptionBox}
-                        // activeControl={activeControl}
-                        // showCaption={showCaption}
                     />
                 </div>
             )}

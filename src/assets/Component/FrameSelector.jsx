@@ -75,7 +75,7 @@ const MOBILE_FRAMES = [
   }
 ];
 
-export const FrameSelector = ({ selectedFrame, onFrameSelect, onSizeChange }) => {
+export const FrameSelector = ({ selectedFrame, onFrameSelect, onSizeChange, onAddFrame, onRemoveFrame}) => {
   const handleFrameSelect = (e) => {
     const selectedFrameSrc = e.target.value;
     const selectedFrameData = MOBILE_FRAMES.find(f => f.src === selectedFrameSrc);
@@ -104,9 +104,9 @@ export const FrameSelector = ({ selectedFrame, onFrameSelect, onSizeChange }) =>
 
   return (
     <div className='frame-selector-container'>
-      <h3>Select Device Frame</h3>
+      <h3>Select Frame</h3>
       <select
-        value={selectedFrame}
+        value={selectedFrame || ""}
         onChange={handleFrameSelect}
         className="device-frame-select"
       >
@@ -116,6 +116,11 @@ export const FrameSelector = ({ selectedFrame, onFrameSelect, onSizeChange }) =>
           </option>
         ))}
       </select>
+      <div className="add-remove-frame">
+        <h3>Add Remove Frames</h3>
+        <button onAddFrame={() => ref.current.addFrame()} className='add-button'>Add</button>
+        <button onRemoveFrame={() => ref.current.removeActiveFrame()} onClick={onRemoveFrame} className='remove-button'>Remove</button>
+      </div>
     </div>
   );
 };

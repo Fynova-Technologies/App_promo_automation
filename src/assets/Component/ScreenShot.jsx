@@ -59,7 +59,7 @@ export const InnerImage = ({ src, screenArea, caption, adjustmentStep }) => {
         top: `${screenArea.top}px`,
         left: `${screenArea.left}px`,
         width: `${screenArea.width}px`,
-        height: `${screenArea.height}px`,
+        height: `${screenArea.height - 11}px`,
         overflow: 'hidden',
         zIndex: 2,
         display: 'flex',

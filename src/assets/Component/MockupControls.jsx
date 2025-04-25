@@ -1,8 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import CaptionControls from "./CaptionControls";
 import '../Style/mockupControls.css'
 
 const MockupControls = (props) => {
+  const [fileInputKey, setFileInputKey] = useState(0);
+
+  const onFileChange = (e) => {
+    props.handleImageSelect(e);
+    setFileInputKey((prev) => prev+1);
+  }
 
   return ( 
   <>
@@ -13,7 +19,9 @@ const MockupControls = (props) => {
         type="file"
         accept="image/jpeg, image/png, image/gif, image/svg+xml"
         style={{ display: "none" }}
-        onChange={props.handleImageSelect}
+        // onChange={props.handleImageSelect}
+        onChange={onFileChange}
+        key={fileInputKey}
       />
     </label>
 

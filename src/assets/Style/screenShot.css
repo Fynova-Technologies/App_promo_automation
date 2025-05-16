@@ -1,8 +1,4 @@
  .inner-image-wrapper {
-    /* width: 100%;
-    height: 100%; */
-    /* width: auto;
-    height: auto; */
     position: absolute;
     overflow: hidden;
     z-index: 1;
@@ -22,22 +18,20 @@
   .inner-image {
     display: block;
     object-fit: contain;
-    border-radius: 30px;
+    border-radius: 20px;
     pointer-events: auto;
     overflow: hidden;
   }
   
-  /* Add styling for the image upload indicator/area */
   .image-upload-area {
     border: 2px dashed #ccc;
-    border-radius: 40px;
+    /* border-radius: 10px; */
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: rgba(245, 245, 245, 0.7);
   }
   
-  /* Style for the caption area */
   .image-caption {
     position: absolute;
     bottom: 0;

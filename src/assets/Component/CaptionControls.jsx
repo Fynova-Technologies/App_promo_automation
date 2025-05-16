@@ -1,12 +1,12 @@
 import '../Style/captionControls.css'
 import '../Style/fonts.css'
 
-const CaptionControls = ({ fontColor, setFontColor, fontFamily, setFontFamily, fontSize, setFontSize, setShowCaptionBox }) => {
+const CaptionControls = ({ fontColor, setFontColor, fontFamily, setFontFamily, fontSize, setFontSize, setShowCaptionBox, handleCaptionDeleted }) => {
     return (
       <div className="caption-controls-container">
 
         <div className="caption-delete-button">
-          <button onClick={() => setShowCaptionBox(false)}>Delete</button>
+          <button onClick={() => {setShowCaptionBox(); handleCaptionDeleted();}}>Delete</button>
         </div>
 
         <div className="caption-style">

@@ -15,7 +15,6 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
 
   const textareaRef = useRef(null);
   const captionBoxRef = useRef(null);
-  const initialPositionSet = useRef(false);
   
   // Center the caption initially
   useEffect(() => {
@@ -30,10 +29,6 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
     e.stopPropagation();
     setSelected(true);
     setShowResizeHandle(true); 
-
-    // setClickCount(prev => prev + 1);
-
-    // setTimeout(() => setClickCount(0), 400);
 
     if (e.detail === 2) {
       setIsEditing(true);
@@ -55,7 +50,6 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
   
   const handleDragStart = (e) => {
     // if (isEditing) return; // Don't drag while editing
-    
     e.stopPropagation();
     e.preventDefault();
     setDragging(true);
@@ -207,7 +201,6 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
           onChange={handleTextChange}
           onBlur={handleEditingComplete}
           className="caption-textarea"
-          placeholder="Add caption"
           style={{
             width: "100%",
             height: "100%",

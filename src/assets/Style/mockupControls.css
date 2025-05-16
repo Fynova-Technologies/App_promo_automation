@@ -7,7 +7,7 @@
     height: 89.5vh;
     padding: 200px 30px;
     border-left: 1px solid white ;
-    z-index: 1000;
+    z-index: 10000;
   }
 
   .select-image-button{

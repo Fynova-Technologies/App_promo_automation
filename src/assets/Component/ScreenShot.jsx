@@ -35,22 +35,6 @@ export const InnerImage = ({ src, screenArea, caption, adjustmentStep }) => {
     }
   }, [src, screenArea]);
   
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-  
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        console.log("Dropped image:", event.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
   return (
     <div
       className="inner-image-wrapper"
@@ -70,10 +54,8 @@ export const InnerImage = ({ src, screenArea, caption, adjustmentStep }) => {
       <div
         ref={innerImageRef}
         className="inner-image-container"
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
       >
-        {src ? (
+        {src && (
           <>
             <img
               src={src}
@@ -90,21 +72,6 @@ export const InnerImage = ({ src, screenArea, caption, adjustmentStep }) => {
             />
             {caption && <div className="image-caption">{caption}</div>}
           </>
-        ) : (
-          <div
-            className="image-upload-area"
-            style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              backgroundColor: 'rgba(0,0,0,0.1)',
-              borderRadius: '4px'
-            }}
-          >
-            <p>Drag and drop an image here</p>
-          </div>
         )}
       </div>
     </div>

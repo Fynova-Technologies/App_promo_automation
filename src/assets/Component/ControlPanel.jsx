@@ -22,6 +22,8 @@ export const ControlPanel = (props) => {
                         fontSize={props.fontSize}
                         setFontSize={props.setFontSize}
                         setShowCaptionBox={props.setShowCaptionBox}
+                        showCaptionBox={props.showCaptionBox}
+                        handleCaptionDeleted={props.handleCaptionDeleted}
                     />
                 </div>
             )}

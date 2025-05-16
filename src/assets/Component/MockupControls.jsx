@@ -19,7 +19,6 @@ const MockupControls = (props) => {
         type="file"
         accept="image/jpeg, image/png, image/gif, image/svg+xml"
         style={{ display: "none" }}
-        // onChange={props.handleImageSelect}
         onChange={onFileChange}
         key={fileInputKey}
       />
@@ -28,7 +27,6 @@ const MockupControls = (props) => {
     <button
       onClick={props.toggleCaption}
       className="caption-button"
-    //   style={{ background: showCaption ? "#f44336" : "#2196F3" }}
     >
       {props.showCaptionControls ? "Caption" : "Caption"}
     </button>
@@ -39,10 +37,14 @@ const MockupControls = (props) => {
     <button
       onClick={props.toggleFrame}
       className="frame-button"
-    //   style={{ background: showFrameSelector ? "#f44336" : "#2196F3" }}
     >
       {props.showFrameSelector ? "Device" : "Device"}
     </button>
+
+    <div className="mockup-indicator">
+      Active Mockup: {props.activeMockupIndex + 1}
+    </div>
+
   </div>
 </>
 )};

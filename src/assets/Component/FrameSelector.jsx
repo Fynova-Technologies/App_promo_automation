@@ -106,7 +106,7 @@ export const FrameSelector = ({ selectedFrame, onFrameSelect, onSizeChange, onAd
     <div className='frame-selector-container'>
       <h3>Select Frame</h3>
       <select
-        value={selectedFrame || ""}
+        value={selectedFrame}
         onChange={handleFrameSelect}
         className="device-frame-select"
       >
@@ -116,11 +116,6 @@ export const FrameSelector = ({ selectedFrame, onFrameSelect, onSizeChange, onAd
           </option>
         ))}
       </select>
-      <div className="add-remove-frame">
-        <h3>Add Remove Frames</h3>
-        <button onAddFrame={() => ref.current.addFrame()} className='add-button'>Add</button>
-        <button onRemoveFrame={() => ref.current.removeActiveFrame()} onClick={onRemoveFrame} className='remove-button'>Remove</button>
-      </div>
     </div>
   );
 };

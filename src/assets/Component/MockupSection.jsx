@@ -5,7 +5,6 @@ import { ControlPanel } from "./ControlPanel";
 import domtoimage from "dom-to-image";
 import "../Style/mockupSection.css";
 
-// Utility function for debouncing
 const debounce = (func, wait) => {
   let timeout;
   return (...args) => {
@@ -18,17 +17,17 @@ const MockupSection = () => {
   const [activeMockupIndex, setActiveMockupIndex] = useState(0); 
   const [showCaptionControls, setShowCaptionControls] = useState(false);
   const [showFrameSelector, setShowFrameSelector] = useState(false);
+  const [captionBoxShown, setCaptionBoxShown] = useState([false, false]); 
   const [backgrounds, setBackgrounds] = useState([
-    'linear-gradient(90deg, rgba(96,93,93,1) 0%, rgba(255,255,255,1) 100%)',
-    'linear-gradient(90deg, rgba(96,93,93,1) 0%, rgba(255,255,255,1) 100%)' 
+    'linear-gradient(90deg, rgb(225, 255, 119) 0%, rgba(255,255,255,1) 100%)',
+    'linear-gradient(90deg, rgb(255, 156, 156) 0%, rgba(255,255,255,1) 100%)'
   ]);
   const [activeControl, setActiveControl] = useState(null);
-
   const mockupRefs = [useRef(null), useRef(null)]; // Refs for each MockupInstance
   const containerRef = useRef(null); // For the outer container
 
   const handleDownload = (index) => {
-    const mockupNode = mockupRefs[index].current?.getContainer();
+    const mockupNode = mockupRefs[index]?.current?.getContainer();
     if (!mockupNode) {
       console.error(`Mockup ${index + 1} not found`);
       return;
@@ -78,10 +77,57 @@ const MockupSection = () => {
     mockupRefs.forEach((_, idx) => handleDownload(idx));
   };
 
-  // const handleResetAll = () => {
-  //   mockupRefs.forEach(ref => ref.current?.resetMockupState());
+  // const handleCaptionDeleted = () => {
+  //   setCaptionBoxShown(prev => {
+  //     const updated = [...prev];
+  //     updated[activeMockupIndex] = false;
+  //     return updated;
+  //   });
   // };
+    const handleCaptionDeleted = () => {
+      // Clear both the visibility state AND reset the caption text
+      const activeRef = mockupRefs[activeMockupIndex].current;
 
+  
+      setCaptionBoxShown(prev => {
+        const updated = [...prev];
+        updated[activeMockupIndex] = true;
+        return updated;
+      });
+
+      setCaptionBoxShown(false);
+
+      // Add this line to actually clear the caption text
+      activeRef.setCaptionText(""); // Resets to empty string
+    };
+
+  const handleToggleCaption = () => {
+    const activeRef = mockupRefs[activeMockupIndex].current;
+    if (!captionBoxShown[activeMockupIndex]) {
+      activeRef.toggleCaption(); // This shows the caption box in the child
+      setCaptionBoxShown(prev => {
+      const updated = [...prev];
+      updated[activeMockupIndex] = true;
+      return updated;
+      });
+    }
+        
+    // 2) Toggle our controls panel open/closed
+    setShowCaptionControls(prev => !prev);
+        
+    // 3) Mark the “caption” control as active (or deactivate if already open)
+    setActiveControl(prev =>
+      prev === "captionControls" ? null : "captionControls"
+    );
+  }
+
+  // Handle image selection for the active mockup
+  const handleImageSelect = (e) => {
+    if (mockupRefs[activeMockupIndex]?.current?.handleImageSelect) {
+      mockupRefs[activeMockupIndex].current.handleImageSelect(e);
+    }
+  };  
+  
   return (
     <div className="mockup-section-wrapper">
       <div className="header">
@@ -89,45 +135,35 @@ const MockupSection = () => {
         <button className="download-button" onClick={handleDownloadAll}>
           Download All
         </button>
-        {/* <button className="reset-button" onClick={handleResetAll}>
-            Reset All
-        </button> */}
       </div>
 
       <MockupControls
         showCaptionControls={showCaptionControls}
-         toggleCaption={() => {
-           // 1) Tell the active child to toggle its caption box
-           const activeRef = mockupRefs[activeMockupIndex].current;
-           activeRef.toggleCaption();
-        
-           // 2) Toggle our controls panel open/closed
-           setShowCaptionControls(prev => !prev);
-        
-           // 3) Mark the “caption” control as active (or deactivate if already open)
-           setActiveControl(prev =>
-             prev === "captionControls" ? null : "captionControls"
-           );
-          }}
-        toggleColorPicker={() =>
+        toggleCaption= {handleToggleCaption}
+        toggleColorPicker={() =>{
           setActiveControl(activeControl === "colorPicker" ? null : "colorPicker")
-        }
+        }}
         toggleFrame={() => {
           setShowFrameSelector(!showFrameSelector);
           setActiveControl(showFrameSelector ? null : "frameSelector");
         }}
-        handleImageSelect={(e) =>
-          mockupRefs[activeMockupIndex].current.handleImageSelect(e)
-        }
         showFrameSelector={showFrameSelector}
+        activeMockupIndex={activeMockupIndex}
+        handleImageSelect={handleImageSelect}
       />
 
       <ControlPanel
         activeControl={activeControl}
+        setActiveControl={setActiveControl}
         showCaptionControls={showCaptionControls}
-        setShowCaptionBox={(value) =>
-          mockupRefs[activeMockupIndex].current.setShowCaptionBox(value)
-        }
+        // setShowCaptionBox={(value) =>
+        //   mockupRefs[activeMockupIndex].current.setShowCaptionBox(value)
+        // }
+        setShowCaptionBox={(value) => {
+        if (mockupRefs[activeMockupIndex]?.current?.setShowCaptionBox) {
+          mockupRefs[activeMockupIndex].current.setShowCaptionBox(value);
+          }
+        }}
         showCaptionBox={mockupRefs[activeMockupIndex].current?.showCaptionBox}
         showFrameSelector={showFrameSelector}
         background={backgrounds[activeMockupIndex]}
@@ -157,33 +193,35 @@ const MockupSection = () => {
         setCurrentFrameConfig={(config) =>
           mockupRefs[activeMockupIndex].current.setCurrentFrameConfig(config)
         }
-        onAddFrame={() => mockupRefs[activeIndex].current.addFrame()}
-        onRemoveFrame={() => mockupRefs[activeIndex].current.removeActiveFrame()}
+        handleCaptionDeleted={handleCaptionDeleted}
       />
 
       <div
         ref={containerRef}
         className="mockup-container-wrapper"
+        style={{position: "relative"}}
       >
         {backgrounds.map((bg, idx) => (
-         <div className="single-mockup-wrapper" key={idx}>
+        <>
+         <div  className="single-mockup-wrapper" key={idx}>
            <MockupInstance
              ref={mockupRefs[idx]}
              index={idx}
              onSelect={setActiveMockupIndex}
              background={bg}
+             isActive={activeMockupIndex ===  idx}
            />
-
            <button
              className="single-download-button"
              onClick={() => handleDownload(idx)}
            >
              Download
            </button>
-
          </div>
+         <div className="gap-container"></div>
+        </>
        ))}
-      </div>
+    </div>
     </div>
   );
 }

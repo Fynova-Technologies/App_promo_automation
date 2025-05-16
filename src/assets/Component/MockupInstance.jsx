@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import MockupContainer from "./MockupContainer";
+import { FrameContent } from "./FrameContent";
+import { InnerImage } from "./ScreenShot";
+import RenderSplitFrame from "./RenderSplitFrame";
 import googlepixel4 from '../Pictures/googlepixel4.png';
 
 const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, isActive}, ref) => {
-  const [position, setPosition] = useState(index === 0 ? { x: 80, y: 100 } : { x: 80, y: 100 });
-  const [rotation, setRotation] = useState(0);
+  const [position, setPosition] = useState(index === 0 ? { x: 90, y: 100 } : { x: 90, y: 100 });
   const [size, setSize] = useState({ width: 225, height: 450 });
-  const [selected, setSelected] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  const [selected, setSelected] = useState(null);
   const [resizing, setResizing] = useState(false);
   const [rotating, setRotating] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -19,11 +22,10 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
   const [fontSize, setFontSize] = useState("28");
   const [mobileFrame, setMobileFrame] = useState(googlepixel4);
   const [activeFrameId, setActiveFrameId] = useState(1);
+  const [canvasSize, setCanvasSize] = useState({width: 380, height: 692});
   const [screenArea, setScreenArea] = useState({
-    // width: 225,
-    // height: 400,
     width: size.width,
-    height: size.height,
+    height: size.width,
     top: 10,
     left: 0,
   });
@@ -34,10 +36,22 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
   const [mobileFrames, setMobileFrames] =useState([
     { id: 1, position: { x: 100, y: 100 } },
   ])
+  const gap = 15;
+
+  // useEffect(() => {
+  //   if (size) {
+  //     setScreenArea({
+  //       width: `${size.width}`,
+  //       height: `${size.height}`,
+  //       top: 10,
+  //       left: 0,
+  //     });
+  //   }
+  // }, [size]);
 
   // Refs defined within the component
   const containerRef = useRef(null);
-  const frameRef = useRef({});
+  const frameRef = useRef(null);
 
     // Handle touch events
   const handleTouchStart = (e) => {
@@ -61,7 +75,7 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
   const handleSelect = (e, frameId) => {
     e.stopPropagation();
     setSelected(true);
-    onSelect(index); // Notify parent which mockup is active
+    onSelect(index); // Notify parent which mockup is activ
     setActiveFrameId(frameId);
   };
 
@@ -75,15 +89,38 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
   const handleDragStart = (e) => {
     e.stopPropagation();
     e.preventDefault();
+    const rect = containerRef.current.getBoundingClientRect();
+    setSelected(true);
     setDragging(true);
     setResizing(false);
     setRotating(false);
+    onSelect(index);
     const elementRect = e.currentTarget.getBoundingClientRect();
     setDragOffset({
       x: e.clientX - elementRect.left,
       y: e.clientY - elementRect.top,
     });
   };
+
+  // const handleDragStart = (e) => {
+  //   e.stopPropagation();
+  //   e.preventDefault();
+    
+  //   setSelected(true);
+  //   setDragging(true);
+  //   setResizing(false);
+  //   setRotating(false);
+    
+  //   // Get the correct offset relative to the frame
+  //   const frameRect = frameRef.current.getBoundingClientRect();
+  //   const offsetX = e.clientX - frameRect.left;
+  //   const offsetY = e.clientY - frameRect.top;
+    
+  //   setDragOffset({
+  //     x: offsetX,
+  //     y: offsetY
+  //   });
+  // };
 
   const handleRotationStart = (e) => {
     e.stopPropagation();
@@ -119,10 +156,12 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
+      
       const img = new Image();
       img.src = URL.createObjectURL(file);
       img.onload = (e) => {
-        setInnerImageSrc(e.target.result);
+        console.log('Image loaded, src:', img.src);
+        setInnerImageSrc(img.src);
         const aspectRatio = img.width / img.height;
         const frameRect = frameRef.current.getBoundingClientRect();
         let effectiveWidth = screenArea.width;
@@ -141,6 +180,7 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
           newWidth = effectiveHeight * aspectRatio;
         }
         setInnerImageSrc(img.src);
+        console.log('innerImageSrc set to:', img.src);
         setSize({ width: newWidth, height: newHeight });
       };
     }
@@ -157,6 +197,7 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
         const newX = e.clientX - containerRect.left - dragOffset.x;
         const newY = e.clientY - containerRect.top - dragOffset.y;
         setPosition({ x: newX, y: newY });
+
       } else if (rotating && selected && !dragging && !resizing) {
         const rect = frameRef.current.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
@@ -200,16 +241,24 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
 
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => ({
+    getImageState: () => ({
+      position,
+      size,
+      rotation,
+      mobileFrame
+    }),
     getContainer: () => containerRef.current,
     handleImageSelect,
     toggleCaption: () => {
       setShowCaptionBox((prev) => !prev);
     },
+    // setShowCaptionBox: (value) => (value),
     setMobileFrame,
     setFontColor,
     setFontFamily,
     setFontSize,
     setCaptionText,
+    setCaptionText: (text) => setCaptionText(text),
     addFrame: () => {
       const newFrame = {
         id: Date.now(),
@@ -222,7 +271,7 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
     removeActiveFrame: () => {
       setMobileFrames(prev => prev.filter(f => f.id !== activeFrameId));
     },
-    getActiveFrame: () => mobileFrames.find(f => f.id === activeFrameId)
+    getActiveFrame: () => mobileFrames.find(f => f.id === activeFrameId),
   }));
 
   useEffect(() => {
@@ -241,36 +290,69 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
     });
   }, [ size, currentFrameConfig ]);
 
+  const handleContainerClick = (e) => {
+    // Only activate if clicking directly on container background
+    if (e.target === containerRef.current) {
+      onSelect(index);
+    }
+  };
+
   return (
-    <MockupContainer
-      containerRef={containerRef}
-      frameRef={frameRef}
-      rotation={rotation}
-      selected={selected}
-      innerImageSrc={innerImageSrc}
-      background={background}
-      showCaptionBox={showCaptionBox}
-      setShowCaptionBox={setShowCaptionBox}
-      captionText={captionText}
-      fontColor={fontColor}
-      fontFamily={fontFamily}
-      fontSize={fontSize}
-      screenArea={screenArea}
-      size={size}
-      mobileFrame={mobileFrame}
-      // mobileFrames={mobileFrames}
-      handleSelect={handleSelect}
-      handleDeselect={handleDeselect}
-      handleDragStart={handleDragStart}
-      handleTouchStart={handleTouchStart}
-      handleRotationStart={handleRotationStart}
-      handleResizeStart={handleResizeStart}
-      handleCaptionChange={handleCaptionChange}
-      position={position}
-      onDownload={onDownload}
-    />
+    <div 
+      ref={containerRef} 
+      style={{position: 'relative', display: 'inline-block', border: isActive ? '3px solid #2196f3' : 'none' }}
+      onClick={handleContainerClick}
+      >
+      
+      <RenderSplitFrame
+          position={position}
+          size={size}
+          rotation={rotation}
+          selected={selected}
+          canvasSize={canvasSize}
+          innerImageSrc={innerImageSrc}
+          mobileFrame={mobileFrame}
+          screenArea={screenArea}
+          gap={gap}
+          frameRef={frameRef}
+          handleDragStart={handleDragStart}
+          handleTouchStart={handleTouchStart}
+          handleRotationStart={handleRotationStart}
+          handleResizeStart={handleResizeStart}
+          showCaptionBox={showCaptionBox}
+          fontColor={fontColor}
+          fontFamily={fontFamily}
+          fontSize={fontSize}
+          onDeselect={handleDeselect}
+      />
+      <MockupContainer
+        containerRef={containerRef}
+        frameRef={frameRef}
+        rotation={rotation}
+        selected={selected}
+        background={background}
+        showCaptionBox={showCaptionBox}
+        setShowCaptionBox={setShowCaptionBox}
+        captionText={captionText}
+        fontColor={fontColor}
+        fontFamily={fontFamily}
+        fontSize={fontSize}
+        screenArea={screenArea}
+        size={size}
+        mobileFrame={mobileFrame}
+        handleSelect={handleSelect}
+        handleDeselect={handleDeselect}
+        handleDragStart={handleDragStart}
+        handleTouchStart={handleTouchStart}
+        handleRotationStart={handleRotationStart}
+        handleResizeStart={handleResizeStart}
+        handleCaptionChange={handleCaptionChange}
+        position={position}
+        onDownload={onDownload}
+        canvasSize={canvasSize}
+      />
+    </div>
   );
 });
 
 export default MockupInstance;
-

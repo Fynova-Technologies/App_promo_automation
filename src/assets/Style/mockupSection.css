@@ -1,6 +1,5 @@
 .mockup-section-wrapper  {
   display: grid;
-  /* grid-template-columns: repeat(5, 0.5fr); */
   grid-template-columns: 0.5fr 0.5fr 0.5fr 0.3fr 0.3fr;
   grid-template-rows: 0.1fr 0.5vh 0.5vh 0.5vh 0.5vh;
   gap: 1px;
@@ -49,10 +48,18 @@
   grid-row-start: 2;
 
   display: grid;
-  grid-template-columns: 1.5fr 1.4fr ;
-  grid-template-rows: 1fr ;
-  gap: 30px;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: auto;
+  grid-column: span 1;
   margin-left: 30%;
+}
+
+.gap-container{
+  background-color: #191a1b;
+  width: 15px;
+  height: 692px;
+  margin-top: 20px;
+  z-index: 10000;
 }
 
 .single-mockup-wrapper{
@@ -144,7 +151,6 @@
 
   .mockup-container-wrapper{
     display: grid;
-    /* grid-template-columns: 1.5fr 1.4fr 1.5fr; */
     grid-template-rows: 0.8fr;
     overflow: hidden;
     overflow-y: auto;

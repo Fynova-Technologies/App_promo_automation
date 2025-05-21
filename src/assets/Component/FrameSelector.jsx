@@ -75,7 +75,7 @@ const MOBILE_FRAMES = [
   }
 ];
 
-export const FrameSelector = ({ selectedFrame, onFrameSelect, onSizeChange, onAddFrame, onRemoveFrame}) => {
+export const FrameSelector = ({ selectedFrame, onFrameSelect, onSizeChange, }) => {
   const handleFrameSelect = (e) => {
     const selectedFrameSrc = e.target.value;
     const selectedFrameData = MOBILE_FRAMES.find(f => f.src === selectedFrameSrc);

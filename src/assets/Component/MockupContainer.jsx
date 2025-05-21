@@ -1,16 +1,10 @@
-import React, {useState} from 'react';
-// import { InnerImage } from "./ScreenShot";
+import React, {useState, useRef, useImperativeHandle} from 'react';
 import {CaptionBox} from "./CaptionBox";
 import { forwardRef } from 'react';
 import '../Style/mockupContainer.css'
-// import { FrameContent } from './FrameContent';
 
 const MockupContainer = forwardRef(({
   containerRef,
-  // frameRef,
-  // rotation,
-  // selected,
-  // innerImageSrc,
   background,
   showCaptionBox,
   setShowCaptionBox,
@@ -18,20 +12,15 @@ const MockupContainer = forwardRef(({
   fontColor,
   fontFamily,
   fontSize,
-  // screenArea,
-  // size,
-  // mobileFrame,
-  // handleSelect,
   handleDeselect,
-  // handleDragStart,
-  // handleTouchStart,
-  // handleRotationStart,
-  // handleResizeStart,
   handleCaptionChange,
-  // position,
   canvasSize,
 }, ref) => {
+  const canvasContainerRef = useRef();
 
+  useImperativeHandle(ref, () => ({
+    getCanvasContainer: () => canvasContainerRef.current,    
+  }));
 
   return(
   <div
@@ -40,7 +29,7 @@ const MockupContainer = forwardRef(({
     style={{background: background }}
     onClick={handleDeselect}
   > 
-    <div className="canvas-container" style={{width:`${canvasSize.width}px`, height: `${canvasSize.height}px`}}>
+    <div className="canvas-container" ref={canvasContainerRef} style={{width:`${canvasSize.width}px`, height: `${canvasSize.height}px`}}>
     {showCaptionBox && (
         <CaptionBox
           containerRef={containerRef}

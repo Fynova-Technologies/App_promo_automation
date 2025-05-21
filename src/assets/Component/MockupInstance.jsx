@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import MockupContainer from "./MockupContainer";
-import { FrameContent } from "./FrameContent";
-import { InnerImage } from "./ScreenShot";
 import RenderSplitFrame from "./RenderSplitFrame";
 import googlepixel4 from '../Pictures/googlepixel4.png';
+import domtoimage from "dom-to-image";
 
-const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, isActive}, ref) => {
-  const [position, setPosition] = useState(index === 0 ? { x: 90, y: 100 } : { x: 90, y: 100 });
+const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, isActive,canvasCount}, ref) => {
+  const [position, setPosition] = useState(index === 0 ? { x: 90, y: 100 } : { x: 500, y: 100 });
   const [size, setSize] = useState({ width: 225, height: 450 });
   const [rotation, setRotation] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -36,22 +35,14 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
   const [mobileFrames, setMobileFrames] =useState([
     { id: 1, position: { x: 100, y: 100 } },
   ])
-  const gap = 15;
-
-  // useEffect(() => {
-  //   if (size) {
-  //     setScreenArea({
-  //       width: `${size.width}`,
-  //       height: `${size.height}`,
-  //       top: 10,
-  //       left: 0,
-  //     });
-  //   }
-  // }, [size]);
+  const [originalCanvas, setOriginalCanvas] = useState(index);
+  const gap = 8;
 
   // Refs defined within the component
+  const mockupContainerRef = useRef(null);
   const containerRef = useRef(null);
   const frameRef = useRef(null);
+  const renderSplitFrameRef = useRef(null);
 
     // Handle touch events
   const handleTouchStart = (e) => {
@@ -65,6 +56,7 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
     
     const touch = e.touches[0];
     const rect = e.currentTarget.getBoundingClientRect();
+
     setDragOffset({
       x: touch.clientX - rect.left,
       y: touch.clientY - rect.top
@@ -86,41 +78,104 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
     setRotating(false);
   };
 
-  const handleDragStart = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    const rect = containerRef.current.getBoundingClientRect();
-    setSelected(true);
-    setDragging(true);
-    setResizing(false);
-    setRotating(false);
-    onSelect(index);
-    const elementRect = e.currentTarget.getBoundingClientRect();
-    setDragOffset({
-      x: e.clientX - elementRect.left,
-      y: e.clientY - elementRect.top,
-    });
-  };
-
   // const handleDragStart = (e) => {
+  //     handleSelect(e);
   //   e.stopPropagation();
   //   e.preventDefault();
-    
   //   setSelected(true);
-  //   setDragging(true);
-  //   setResizing(false);
-  //   setRotating(false);
-    
-  //   // Get the correct offset relative to the frame
-  //   const frameRect = frameRef.current.getBoundingClientRect();
-  //   const offsetX = e.clientX - frameRect.left;
-  //   const offsetY = e.clientY - frameRect.top;
-    
-  //   setDragOffset({
-  //     x: offsetX,
-  //     y: offsetY
-  //   });
+  //   onSelect(index);
+  //   const startX = e.clientX;
+  //   const startY = e.clientY;
+  //   const initialPositionX = position.x;
+  //   const initialPositionY = position.y;
+
+  //   // Track whether dragging crosses canvas boundaries
+  //   let crossedCanvas = false;
+  //   let lastCanvasIndex = index;
+
+  //   const handleMouseMove = (e) => {
+  //     const deltaX = e.clientX - startX;
+  //     const deltaY = e.clientY - startY;
+  //     setPosition({
+  //       x: initialPositionX + deltaX,
+  //       y: initialPositionY + deltaY,
+  //     });
+  //   };
+
+  //   const handleMouseUp = () => {
+  //     document.removeEventListener('mousemove', handleMouseMove);
+  //     document.removeEventListener('mouseup', handleMouseUp);
+  //   };
+
+  //   document.addEventListener('mousemove', handleMouseMove);
+  //   document.addEventListener('mouseup', handleMouseUp);
   // };
+
+    const handleDragStart = (e) => {
+    handleSelect(e);
+    e.stopPropagation();
+    e.preventDefault();
+    setSelected(true);
+    onSelect(index);
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const initialPositionX = position.x;
+    const initialPositionY = position.y;
+    
+    // Track whether dragging crosses canvas boundaries
+    let crossedCanvas = false;
+    let lastCanvasIndex = index;
+
+    const handleMouseMove = (e) => {
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+      
+      const newPosition = {
+        x: initialPositionX + deltaX,
+        y: initialPositionY + deltaY,
+      };
+      
+      // Calculate which canvas the element is currently over
+      const canvasWidth = canvasSize.width;
+      const totalWidth = canvasCount * canvasWidth + (canvasCount - 1) * gap;
+      
+      // Determine current canvas based on position
+      let currentCanvas = 0;
+      if (newPosition.x > canvasWidth + gap/2) {
+        currentCanvas = 1;
+      }
+      
+      // Check if we've crossed canvas boundaries
+      if (currentCanvas !== lastCanvasIndex) {
+        crossedCanvas = true;
+        lastCanvasIndex = currentCanvas;
+        
+        // Update data attribute on the frame element
+        if (frameRef.current) {
+          frameRef.current.setAttribute('data-original-canvas', originalCanvas.toString());
+          
+          // Add class to identify elements that have been moved between canvases
+          frameRef.current.classList.add('canvas-crossed');
+        }
+      }
+      
+      setPosition(newPosition);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      
+      // If we crossed canvas boundaries, update the originalCanvas
+      if (crossedCanvas) {
+        setOriginalCanvas(lastCanvasIndex);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
 
   const handleRotationStart = (e) => {
     e.stopPropagation();
@@ -186,8 +241,59 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
     }
   };
 
+
   //Handle caption
   const handleCaptionChange = (newCaption) => setCaptionText(newCaption);
+
+  // Mouse and Touch Event Effects 
+  // useEffect(() => {
+  //   const handleGlobalMouseMove = (e) => {
+  //     if (dragging && !resizing && !rotating) {
+  //       const containerRect = containerRef.current.getBoundingClientRect();
+  //       const newX = e.clientX - containerRect.left - dragOffset.x;
+  //       const newY = e.clientY - containerRect.top - dragOffset.y;
+  //       setPosition({ x: newX, y: newY });
+
+  //     } else if (rotating && selected && !dragging && !resizing) {
+  //       const rect = frameRef.current.getBoundingClientRect();
+  //       const centerX = rect.left + rect.width / 2;
+  //       const centerY = rect.top + rect.height / 2;
+  //       const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+  //       const rotationDelta = angle - dragOffset.initialAngle;
+  //       setRotation(dragOffset.initialRotation + rotationDelta);
+  //     } else if (resizing && selected && !dragging && !rotating) {
+  //       const imageRect = frameRef.current.getBoundingClientRect();
+  //       const dx = e.clientX - imageRect.left;
+  //       const ratio = size.height / size.width;
+  //       const newWidth = Math.max(100, dx);
+  //       const newHeight = newWidth * ratio;
+  //       setSize({ width: newWidth, height: newHeight });
+  //       const { top, left, right, bottom } = currentFrameConfig.screenAreaOffsets;
+  //       setScreenArea({
+  //         width: newWidth - newWidth * (left + right),
+  //         height: newHeight - newHeight * (top + bottom),
+  //         top: newHeight * top,
+  //         left: newWidth * left,
+  //       });
+  //     }
+  //   };
+
+  //   const handleGlobalMouseUp = () => {
+  //     setDragging(false);
+  //     setRotating(false);
+  //     setResizing(false);
+  //   };
+
+  //   if (dragging || rotating || resizing) {
+  //     window.addEventListener("mousemove", handleGlobalMouseMove);
+  //     window.addEventListener("mouseup", handleGlobalMouseUp);
+  //   }
+
+  //   return () => {
+  //     window.removeEventListener("mousemove", handleGlobalMouseMove);
+  //     window.removeEventListener("mouseup", handleGlobalMouseUp);
+  //   };
+  // }, [dragging, rotating, resizing, selected, dragOffset, size, currentFrameConfig]);
 
   // Mouse and Touch Event Effects 
   useEffect(() => {
@@ -196,6 +302,17 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
         const containerRect = containerRef.current.getBoundingClientRect();
         const newX = e.clientX - containerRect.left - dragOffset.x;
         const newY = e.clientY - containerRect.top - dragOffset.y;
+        
+        // Track if we've moved to another canvas
+        const canvasWidth = canvasSize.width;
+        const currentCanvas = newX > canvasWidth + gap/2 ? 1 : 0;
+        
+        // Mark element as moved between canvases if applicable
+        if (currentCanvas !== index && frameRef.current) {
+          frameRef.current.setAttribute('data-moved-to-canvas', currentCanvas.toString());
+          frameRef.current.setAttribute('data-original-canvas', originalCanvas.toString());
+        }
+        
         setPosition({ x: newX, y: newY });
 
       } else if (rotating && selected && !dragging && !resizing) {
@@ -237,7 +354,7 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
       window.removeEventListener("mousemove", handleGlobalMouseMove);
       window.removeEventListener("mouseup", handleGlobalMouseUp);
     };
-  }, [dragging, rotating, resizing, selected, dragOffset, size, currentFrameConfig]);
+  }, [dragging, rotating, resizing, selected, dragOffset, size, currentFrameConfig, canvasSize, gap, index, originalCanvas]);
 
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => ({
@@ -245,14 +362,21 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
       position,
       size,
       rotation,
-      mobileFrame
+      mobileFrame,
+      originalCanvas
     }),
     getContainer: () => containerRef.current,
+    // getContainer: () => wrapperRef.current,
+    getRenderSplitFrame: () => renderSplitFrameRef.current.getRenderSplitFrame(),
     handleImageSelect,
     toggleCaption: () => {
       setShowCaptionBox((prev) => !prev);
     },
     // setShowCaptionBox: (value) => (value),
+    clearCaptionBox: () => {
+      setShowCaptionBox(false);
+      setCaptionText("");
+    },
     setMobileFrame,
     setFontColor,
     setFontFamily,
@@ -293,6 +417,7 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
   const handleContainerClick = (e) => {
     // Only activate if clicking directly on container background
     if (e.target === containerRef.current) {
+      setSelected(true);
       onSelect(index);
     }
   };
@@ -300,32 +425,12 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
   return (
     <div 
       ref={containerRef} 
-      style={{position: 'relative', display: 'inline-block', border: isActive ? '3px solid #2196f3' : 'none' }}
-      onClick={handleContainerClick}
-      >
-      
-      <RenderSplitFrame
-          position={position}
-          size={size}
-          rotation={rotation}
-          selected={selected}
-          canvasSize={canvasSize}
-          innerImageSrc={innerImageSrc}
-          mobileFrame={mobileFrame}
-          screenArea={screenArea}
-          gap={gap}
-          frameRef={frameRef}
-          handleDragStart={handleDragStart}
-          handleTouchStart={handleTouchStart}
-          handleRotationStart={handleRotationStart}
-          handleResizeStart={handleResizeStart}
-          showCaptionBox={showCaptionBox}
-          fontColor={fontColor}
-          fontFamily={fontFamily}
-          fontSize={fontSize}
-          onDeselect={handleDeselect}
-      />
+      style={{position: 'relative', display: 'inline-block', border: isActive ? '3px solid #2196f3' : 'none', }}
+      onMouseDown={handleContainerClick}
+      data-canvas-index={index}
+    >
       <MockupContainer
+        ref={mockupContainerRef}
         containerRef={containerRef}
         frameRef={frameRef}
         rotation={rotation}
@@ -350,6 +455,31 @@ const MockupInstance = forwardRef(({ index, onSelect, background, onDownload, is
         position={position}
         onDownload={onDownload}
         canvasSize={canvasSize}
+      />
+      
+      <RenderSplitFrame
+        ref={mockupContainerRef}
+        index={index}
+        position={position}
+        size={size}
+        rotation={rotation}
+        selected={selected}
+        canvasSize={canvasSize}
+        innerImageSrc={innerImageSrc}
+        mobileFrame={mobileFrame}
+        screenArea={screenArea}
+        gap={gap}
+        frameRef={frameRef}
+        handleDragStart={handleDragStart}
+        handleTouchStart={handleTouchStart}
+        handleRotationStart={handleRotationStart}
+        handleResizeStart={handleResizeStart}
+        showCaptionBox={showCaptionBox}
+        fontColor={fontColor}
+        fontFamily={fontFamily}
+        fontSize={fontSize}
+        onDeselect={handleDeselect}
+        onSelectFrame={handleSelect}
       />
     </div>
   );

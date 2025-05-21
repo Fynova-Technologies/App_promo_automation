@@ -6,7 +6,7 @@ const CaptionControls = ({ fontColor, setFontColor, fontFamily, setFontFamily, f
       <div className="caption-controls-container">
 
         <div className="caption-delete-button">
-          <button onClick={() => {setShowCaptionBox(); handleCaptionDeleted();}}>Delete</button>
+          <button onClick={(e) => {e.stopPropagation(); handleCaptionDeleted();}}> Delete </button>
         </div>
 
         <div className="caption-style">

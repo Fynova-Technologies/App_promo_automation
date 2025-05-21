@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import "../Style/captionBox.css";
 
-export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, fontFamily, fontSize }) => {
+export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, fontFamily, fontSize, onDelete }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [size, setSize] = useState({ width: 200, height: 60 });
   const [isEditing, setIsEditing] = useState(false);
@@ -174,12 +174,11 @@ export const CaptionBox = ({ containerRef, caption, onCaptionChange, fontColor, 
     };
   }, [containerRef]);
 
-  return (
-    <div style={{position: "relative"}}> 
+return (
+  <div style={{position: "relative"}}> 
     <div
       ref={captionBoxRef}
       className={`caption-box-container ${selected ? 'selected' : ''}`}
-      // className="caption-box-container"
       style={{
         position: "absolute",
         left: `${position.x}px`,
